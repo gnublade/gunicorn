@@ -15,6 +15,7 @@ class DjangoApplication(Application):
     
     def init(self, parser, opts, args):
         from django.conf import ENVIRONMENT_VARIABLE
+        from django.utils import importlib
         self.settings_modname = None
         self.project_path = os.getcwd()
         if args:
@@ -39,7 +40,7 @@ class DjangoApplication(Application):
         else:
             # try to check if we can import settings already.
             try:
-                import settings
+                importlib.import_module(self.settings_modname)
             except ImportError:
                 # test if we are already in the project
                 # if not we try to use to find the module in current
@@ -66,8 +67,9 @@ class DjangoApplication(Application):
 
     def setup_environ(self):
         from django.core.management import setup_environ
+        from django.utils import importlib
         try:
-            import settings
+            settings = importlib.import_module(self.settings_modname)
             setup_environ(settings)
         except ImportError, e:
             return self.no_settings(self.settings_modname, import_error=True)
